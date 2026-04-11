@@ -77,7 +77,7 @@ if current_time >= start_time + tiempo_circulo:
             start_time = current_time
 ```   
 
-* (Opcional) Cuadrado
+* Cuadrado
 ```python
 if estado == 0:  # ESTADO: Recta
 
