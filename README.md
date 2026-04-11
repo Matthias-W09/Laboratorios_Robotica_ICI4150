@@ -103,6 +103,6 @@ tiempo_pausa = 5.0
 4.  **Simulación de círculo:** Para lograr una trayectoria circular constante, se deben mantener velocidades diferentes pero fijas en ambas ruedas. Con el codigo proporcionado, el giro del robot es de 8 segundos.
 
 ## Evidencia Visual
-*(Incluir aquí capturas de pantalla o enlaces a videos del funcionamiento en Webots)*
+A continuación se muestra la ejecución del controlador del robot en Webots.
 ## Demostración del robot
 ![Robot en funcionamiento](Robot-Video.gif)
