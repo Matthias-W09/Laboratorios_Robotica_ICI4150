@@ -23,7 +23,7 @@ Donde:
 * **Programador:** Carlos Aguirre [Paralelo 2] - Implementación del controlador 
 * **Experimentador:** Javier Donetch [Paralelo 2] - Ejecución de pruebas 
 * **Analista:** Matthias Julio [Paralelo 1] - Interpretación de resultados 
-* **Documentador:** Ignacio Vera [Paralelo 1] - Redacción del informe y README 
+* **Documentador:** Ignacio Vera [Paralelo 1] - Redacción del informe / Readme
 * **Integrador:** Luciano Fredes [Paralelo 2] - Coordinación del trabajo
 
 ## Instrucciones de Ejecución
