@@ -44,9 +44,55 @@ Se realizaron diversas pruebas modificando las velocidades de los motores para o
 
 ### Desafíos Implementados
 El controlador ha sido programado para ejecutar las siguientes figuras:
-* Línea recta 
-* Curva y círculo concéntrico 
+* Línea recta
+```python
+left_motor.setVelocity(2.0)
+right_motor.setVelocity(2.0)
+```
+* Curva y círculo concéntrico
+```python
+left_motor.setVelocity(2.5)
+right_motor.setVelocity(5.0)
+
+if current_time >= start_time + tiempo_circulo:
+
+            rectas = 0
+            estado = 0
+            start_time = current_time
+```   
+
 * (Opcional) Cuadrado
+```python
+if estado == 0:  # ESTADO: Recta
+
+            left_motor.setVelocity(2.0)
+            right_motor.setVelocity(2.0)
+
+            if current_time >= start_time + tiempo_recta:
+
+                estado = 1
+                cont = cont + 1
+                start_time = current_time
+
+        elif estado == 1:  # ESTADO: Esquina
+
+            left_motor.setVelocity(3.0)
+            right_motor.setVelocity(0)
+
+            if current_time >= start_time + tiempo_giro:
+                estado = 0
+                start_time = current_time
+```  
+
+* Tiempos
+```python
+tiempo_circulo = 8.0
+tiempo_recta = 2.0
+tiempo_giro = 1.45
+tiempo_pausa = 5.0
+```  
+
+
 ## Análisis de Resultados
 1.  **Velocidades iguales:** El robot mantiene un avance lineal ya que no existe diferencia de potencial entre los actuadores que genere rotación.
 2.  **Velocidades diferentes:** Se genera un radio de giro dependiente de la diferencia entre $v_{r}$ y $v_{l}$. Si una rueda es más veloz, el robot curva hacia el lado opuesto.
