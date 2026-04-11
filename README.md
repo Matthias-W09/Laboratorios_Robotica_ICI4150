@@ -4,7 +4,15 @@
 ## Información General
 * **Asignatura:** Robótica y Sistemas Autónomos 2026-01 
 * **Código:** ICI 4150 
-* **Herramientas:** Webots, Python 
+* **Herramientas:** Webots, Python
+  
+## Integrantes del Equipo
+* **Programador:** Carlos Aguirre [Paralelo 2] - Implementación del controlador 
+* **Experimentador:** Javier Donetch [Paralelo 2] - Ejecución de pruebas 
+* **Analista:** Matthias Julio [Paralelo 1] - Interpretación de resultados 
+* **Documentador:** Ignacio Vera [Paralelo 1] - Redacción del informe / Readme
+* **Integrador:** Luciano Fredes [Paralelo 2] - Coordinación del trabajo
+
 ## Descripción del Laboratorio
 El objetivo de esta actividad es comprender y analizar el comportamiento cinemático de un robot móvil diferencial (e-puck) mediante simulaciones interactivas. 
 En este modelo, el movimiento del robot es determinado por el control independiente de las velocidades de sus dos ruedas motrices.
@@ -19,12 +27,6 @@ Donde:
 * **$v_{r}$**: Velocidad de la rueda derecha 
 * **$v_{l}$**: Velocidad de la rueda izquierda
 * **L**: Distancia entre las ruedas
-## Integrantes del Equipo
-* **Programador:** Carlos Aguirre [Paralelo 2] - Implementación del controlador 
-* **Experimentador:** Javier Donetch [Paralelo 2] - Ejecución de pruebas 
-* **Analista:** Matthias Julio [Paralelo 1] - Interpretación de resultados 
-* **Documentador:** Ignacio Vera [Paralelo 1] - Redacción del informe / Readme
-* **Integrador:** Luciano Fredes [Paralelo 2] - Coordinación del trabajo
 
 ## Instrucciones de Ejecución
 Para reproducir la simulación, siga estos pasos.
