@@ -1,6 +1,19 @@
 
 # Laboratorio 1: Simulación de un Robot Móvil Diferencial en Webots
 
+## Índice de Contenidos
+
+- [Información General](#información-general)
+- [Integrantes del Equipo](#integrantes-del-equipo)
+- [Descripción del Laboratorio](#descripción-del-laboratorio)
+- [Modelo Cinemático](#modelo-cinemático)
+- [Instrucciones de Ejecución](#instrucciones-de-ejecución)
+- [Resultados y Experimentos](#resultados-y-experimentos)
+- [Desafíos Implementados](#desafíos-implementados)
+- [Tiempos](#tiempos)
+- [Análisis de Resultados](#análisis-de-resultados)
+- [Evidencia Visual](#evidencia-visual)
+
 ## Información General
 * **Asignatura:** Robótica y Sistemas Autónomos 2026-01 
 * **Código:** ICI 4150 
@@ -104,5 +117,5 @@ tiempo_pausa = 5.0
 
 ## Evidencia Visual
 A continuación se muestra la ejecución del controlador del robot en Webots.
-## Demostración del robot
+### Demostración del robot
 ![Robot en funcionamiento](Robot-Video.gif)
