@@ -29,9 +29,10 @@ Donde:
 ## Instrucciones de Ejecución
 Para reproducir la simulación, siga estos pasos.
 1. Instalar y abrir **Webots**.
-2. Cargar el mundo que contiene el robot diferencial (e-puck).
-3. Configurar el controlador de Python incluido en este repositorio en el nodo del robot.
-4. Presionar el botón de reproducción (Play) para observar el comportamiento.
+2. Instalar Python
+3. Cargar el mundo que contiene el robot diferencial (e-puck).
+4. Configurar el controlador de Python incluido en este repositorio en el nodo del robot.
+5. Presionar el botón de reproducción (Play) para observar el comportamiento.
 
 ## Resultados y Experimentos
 Se realizaron diversas pruebas modificando las velocidades de los motores para observar la trayectoria resultante:
