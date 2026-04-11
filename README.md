@@ -9,8 +9,9 @@
 - [Modelo Cinemático](#modelo-cinemático)
 - [Instrucciones de Ejecución](#instrucciones-de-ejecución)
 - [Resultados y Experimentos](#resultados-y-experimentos)
-- [Análisis de Resultados](#análisis-de-resultados)
 - [Evidencia Visual](#evidencia-visual)
+- [Análisis de Resultados](#análisis-de-resultados)
+
 
 ## Información General
 * **Asignatura:** Robótica y Sistemas Autónomos 2026-01 
@@ -106,13 +107,6 @@ tiempo_giro = 1.45
 tiempo_pausa = 5.0
 ```  
 
-
-## Análisis de Resultados
-1.  **Velocidades iguales:** El robot mantiene un avance lineal ya que no existe diferencia de potencial entre los actuadores que genere rotación.
-2.  **Velocidades diferentes:** Se genera un radio de giro dependiente de la diferencia entre $v_{r}$ y $v_{l}$. Si una rueda es más veloz, el robot curva hacia el lado opuesto.
-3.  **Velocidades opuestas:** Al girar en sentidos contrarios con la misma magnitud, el centro de masa del robot permanece estático mientras el chasis rota sobre su eje central.
-4.  **Simulación de círculo:** Para lograr una trayectoria circular constante, se deben mantener velocidades diferentes pero fijas en ambas ruedas. Con el codigo proporcionado, el giro del robot es de 8 segundos.
-
 ## Evidencia Visual
 A continuación se muestra la ejecución del controlador del robot en Webots.
 ### Demostración del robot
@@ -124,3 +118,45 @@ A continuación se muestra la ejecución del controlador del robot en Webots.
 - Rotación sobre su propio eje al aplicar velocidades opuestas.
 - Trayectorias curvas y circulares con velocidades distintas.
 - Formación de figuras geométricas mediante cambios de estado.
+
+## Análisis de Resultados
+1.  **Velocidades iguales:** El robot mantiene un avance lineal ya que no existe diferencia de potencial entre los actuadores que genere rotación.
+2.  **Velocidades diferentes:** Se genera un radio de giro dependiente de la diferencia entre $v_{r}$ y $v_{l}$. Si una rueda es más veloz, el robot curva hacia el lado opuesto.
+3.  **Velocidades opuestas:** Al girar en sentidos contrarios con la misma magnitud, el centro de masa del robot permanece estático mientras el chasis rota sobre su eje central.
+4.  **Simulación de círculo:** Para lograr una trayectoria circular constante, se deben mantener velocidades diferentes pero fijas en ambas ruedas. Con el codigo proporcionado, el giro del robot es de 8 segundos.
+
+### 1. ¿Qué ocurre cuando ambas ruedas tienen la misma velocidad?
+
+Cuando $v_r = v_l$, el robot se desplaza en línea recta.  
+Esto ocurre porque no existe diferencia de velocidades entre las ruedas, por lo que la velocidad angular ($\omega$) es igual a cero. En consecuencia, el robot no rota y mantiene una trayectoria rectilínea constante.
+
+---
+
+### 2. ¿Cómo cambia la trayectoria cuando las velocidades son diferentes?
+
+Cuando $v_r \neq v_l$, el robot describe una trayectoria curva.  
+La diferencia entre las velocidades genera una velocidad angular distinta de cero, provocando que el robot gire mientras avanza.  
+El radio de la curva depende de la diferencia entre $v_r$ y $v_l$:  
+- Si la diferencia es pequeña → curva suave  
+- Si la diferencia es grande → giro más cerrado  
+
+---
+
+### 3. ¿Qué ocurre cuando una rueda gira en sentido opuesto a la otra?
+
+Cuando $v_r = -v_l$, el robot realiza una rotación sobre su propio eje.  
+En este caso, la velocidad lineal ($v$) es cero, por lo que el robot no se desplaza, pero sí tiene velocidad angular distinta de cero.  
+Esto provoca que el robot gire en el mismo lugar, sin cambiar su posición.
+
+---
+
+### 4. ¿Qué tipo de movimiento permite dibujar un círculo?
+
+Para generar un movimiento circular, se deben mantener velocidades constantes y diferentes en ambas ruedas.  
+Esto produce una combinación de velocidad lineal y angular constante, lo que genera una trayectoria circular uniforme.  
+
+En la simulación, este comportamiento se logra con:
+```python
+left_motor.setVelocity(2.5)
+right_motor.setVelocity(5.0)
+```
