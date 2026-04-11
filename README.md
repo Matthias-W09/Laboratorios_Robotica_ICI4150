@@ -98,7 +98,7 @@ tiempo_pausa = 5.0
 1.  **Velocidades iguales:** El robot mantiene un avance lineal ya que no existe diferencia de potencial entre los actuadores que genere rotación.
 2.  **Velocidades diferentes:** Se genera un radio de giro dependiente de la diferencia entre $v_{r}$ y $v_{l}$. Si una rueda es más veloz, el robot curva hacia el lado opuesto.
 3.  **Velocidades opuestas:** Al girar en sentidos contrarios con la misma magnitud, el centro de masa del robot permanece estático mientras el chasis rota sobre su eje central.
-4.  **Simulación de círculo:** Para lograr una trayectoria circular constante, se deben mantener velocidades diferentes pero fijas en ambas ruedas.
+4.  **Simulación de círculo:** Para lograr una trayectoria circular constante, se deben mantener velocidades diferentes pero fijas en ambas ruedas. Con el codigo proporcionado, el giro del robot es de 8 segundos.
 
 ## Evidencia Visual
 *(Incluir aquí capturas de pantalla o enlaces a videos del funcionamiento en Webots)*
