@@ -102,5 +102,4 @@ tiempo_pausa = 5.0
 
 ## Evidencia Visual
 *(Incluir aquí capturas de pantalla o enlaces a videos del funcionamiento en Webots)*
-## Evidencia en video  
-[Haz clic aquí para ver el video](https://github.com/Matthias-W09/Laboratorio_1_Robotica_ICI4150/blob/ae4a3cd3a25f25ec0803fa276f33432a266aa645/Robot%20Video.mp4)
+[![Video del robot](https://via.placeholder.com/600x300?text=Ver+Video+del+Robot)](https://github.com/Matthias-W09/Laboratorio_1_Robotica_ICI4150/blob/ae4a3cd3a25f25ec0803fa276f33432a266aa645/Robot%20Video.mp4)
