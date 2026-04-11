@@ -9,8 +9,6 @@
 - [Modelo Cinemático](#modelo-cinemático)
 - [Instrucciones de Ejecución](#instrucciones-de-ejecución)
 - [Resultados y Experimentos](#resultados-y-experimentos)
-- [Desafíos Implementados](#desafíos-implementados)
-- [Tiempos](#tiempos)
 - [Análisis de Resultados](#análisis-de-resultados)
 - [Evidencia Visual](#evidencia-visual)
 
@@ -119,3 +117,10 @@ tiempo_pausa = 5.0
 A continuación se muestra la ejecución del controlador del robot en Webots.
 ### Demostración del robot
 ![Robot en funcionamiento](Robot-Video.gif)
+
+### Descripción del comportamiento observado
+
+- Movimiento recto con velocidades iguales.
+- Rotación sobre su propio eje al aplicar velocidades opuestas.
+- Trayectorias curvas y circulares con velocidades distintas.
+- Formación de figuras geométricas mediante cambios de estado.
