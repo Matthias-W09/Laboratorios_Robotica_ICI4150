@@ -120,23 +120,23 @@ A continuación se muestra la ejecución del controlador del robot en Webots.
 - Formación de figuras geométricas mediante cambios de estado.
 
 ## Análisis de Resultados
-1. ¿Qué ocurre cuando ambas ruedas tienen la misma velocidad?
+1. **¿Qué ocurre cuando ambas ruedas tienen la misma velocidad?**
 Cuando $v_r = v_l$, el robot se desplaza en línea recta.  
 Esto ocurre porque no existe diferencia de velocidades entre las ruedas, por lo que la velocidad angular ($\omega$) es igual a cero. En consecuencia, el robot no rota y mantiene una trayectoria rectilínea constante.
 
-2. ¿Cómo cambia la trayectoria cuando las velocidades son diferentes?
+2. **¿Cómo cambia la trayectoria cuando las velocidades son diferentes?**
 Cuando $v_r \neq v_l$, el robot describe una trayectoria curva.  
 La diferencia entre las velocidades genera una velocidad angular distinta de cero, provocando que el robot gire mientras avanza.  
 El radio de la curva depende de la diferencia entre $v_r$ y $v_l$:  
 - Si la diferencia es pequeña → curva suave  
 - Si la diferencia es grande → giro más cerrado  
 
-3. ¿Qué ocurre cuando una rueda gira en sentido opuesto a la otra?
+3. **¿Qué ocurre cuando una rueda gira en sentido opuesto a la otra?**
 Cuando $v_r = -v_l$, el robot realiza una rotación sobre su propio eje.  
 En este caso, la velocidad lineal ($v$) es cero, por lo que el robot no se desplaza, pero sí tiene velocidad angular distinta de cero.  
 Esto provoca que el robot gire en el mismo lugar, sin cambiar su posición.
 
-4. ¿Qué tipo de movimiento permite dibujar un círculo?
+4. **¿Qué tipo de movimiento permite dibujar un círculo?**
 Para generar un movimiento circular, se deben mantener velocidades constantes y diferentes en ambas ruedas.  
 Esto produce una combinación de velocidad lineal y angular constante, lo que genera una trayectoria circular uniforme.  
 
