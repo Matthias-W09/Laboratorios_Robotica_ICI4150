@@ -42,12 +42,28 @@ Donde:
 * **L**: Distancia entre las ruedas
 
 ## Instrucciones de Ejecución
-Para reproducir la simulación, siga estos pasos.
-1. Instalar y abrir **Webots**.
-2. Instalar Python
-3. Cargar el mundo que contiene el robot diferencial (e-puck).
-4. Configurar el controlador de Python incluido en este repositorio en el nodo del robot.
-5. Presionar el botón de reproducción (Play) para observar el comportamiento.
+Para reproducir la simulación del robot móvil diferencial en Webots, siga los siguientes pasos:
+
+1. Descargar e instalar el simulador :contentReference[oaicite:0]{index=0} desde su sitio oficial:  
+   [Descargar Webots](https://www.cyberbotics.com/#download)  
+   Luego, abrir la aplicación.  
+  
+2. Descargar e instalar **Python 3.14** desde el sitio oficial:  
+   [Descargar Python](https://www.python.org/downloads/)  
+   Asegurarse de que Python esté correctamente instalado y agregado al sistema.
+
+3. Descargar o clonar este repositorio en su computador. Alternativamente, puede descargar únicamente el archivo del controlador (`lab1controlere-puck.py`) necesario para la simulación.
+
+4. En Webots, abrir un mundo que contenga el robot móvil diferencial tipo *e-puck* (puede utilizar un ejemplo incluido en Webots).
+
+5. Seleccionar el robot dentro del entorno de simulación.
+
+6. En las propiedades del robot:
+   - Ubicar el campo **controller**
+   - Asignar el archivo `lab1controlere-puck.py` incluido en este repositorio  
+   (para esto, asegúrese de que el archivo esté dentro de la carpeta del proyecto o en la ruta accesible por Webots).
+
+7. Presionar el botón **Play** en Webots para iniciar la simulación.
 
 ## Resultados y Experimentos
 Se realizaron diversas pruebas modificando las velocidades de los motores para observar la trayectoria resultante:
