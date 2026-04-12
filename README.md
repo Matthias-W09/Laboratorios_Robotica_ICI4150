@@ -48,8 +48,9 @@ Para reproducir la simulación del robot móvil diferencial en Webots, siga los 
    [Descargar Webots](https://www.cyberbotics.com/#download)  
    Luego, abrir la aplicación.  
   
-2. Descargar e instalar **Python 3.14** desde el sitio oficial:  
+2. Descargar e instalar **Python** desde el sitio oficial:  
    [Descargar Python](https://www.python.org/downloads/)  
+   Se utilizó la versión **Python 3.12.4** para el desarrollo de este laboratorio. 
    Asegurarse de que Python esté correctamente instalado y agregado al sistema.
 
 3. Descargar o clonar este repositorio en su computador. Alternativamente, puede descargar únicamente el archivo del controlador (`lab1controlere-puck.py`) necesario para la simulación.
