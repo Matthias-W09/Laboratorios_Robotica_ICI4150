@@ -17,290 +17,427 @@
 - [Evidencia Visual](#evidencia-visual)
 - [Análisis Final y Conclusiones](#análisis-final-y-conclusiones)
 
+---
 
-## Información General
-* **Asignatura:** Robótica y Sistemas Autónomos 2026-01
-* **Código:** ICI 4150
-* **Herramientas:** Webots, Python
+# Información General
 
-## Integrantes del Equipo
-* **Programador:** Carlos Aguirre [Paralelo 2] - Implementación del controlador
-* **Experimentador:** Javier Donetch [Paralelo 2] - Ejecución de pruebas
-* **Analista:** Matthias Julio [Paralelo 1] - Interpretación de resultados
-* **Documentador:** Ignacio Vera [Paralelo 1] - Redacción del informe / Readme
-* **Integrador:** Luciano Fredes [Paralelo 2] - Coordinación del trabajo
+- **Asignatura:** Robótica y Sistemas Autónomos 2026-01
+- **Código:** ICI 4150
+- **Herramientas utilizadas:** Webots, Python
 
-## Objetivo
+---
+
+# Integrantes del Equipo
+
+| Rol | Integrante |
+|---|---|
+| Programador | Carlos Aguirre |
+| Experimentador | Javier Donetch |
+| Analista | Matthias Julio |
+| Documentador | Ignacio Vera |
+| Integrador | Luciano Fredes |
+
+---
+
+# Objetivo
+
 Implementar un sistema básico de navegación reactiva en Webots para un robot móvil diferencial, utilizando sensores de distancia y encoders de rueda, aplicando filtrado sobre las mediciones y empleando un filtro de Kalman para estimar la distancia frontal a obstáculos y mejorar la toma de decisiones.
 
-## Descripción del Robot y Sensores
+---
 
-Se utilizó el robot **e-puck** de Webots, un robot móvil diferencial con dos ruedas motrices independientes.
+# Descripción del Robot y Sensores
 
-### Sensores utilizados
-| Sensor | Descripción |
-| :--- | :--- |
-| `ps0`, `ps7` | Sensores frontales de distancia (izquierdo y derecho) |
-| `ps5` | Sensor lateral izquierdo |
-| `ps2` | Sensor lateral derecho |
-| Encoder rueda izquierda | Medición angular del giro de la rueda izquierda |
-| Encoder rueda derecha | Medición angular del giro de la rueda derecha |
+Se utilizó el robot **e-puck** de Webots, un robot diferencial con dos ruedas motrices independientes y sensores infrarrojos de proximidad.
 
-Los sensores de distancia/proximidad entregan valores proporcionales a la cercanía de obstáculos, mientras que los encoders registran el desplazamiento angular acumulado de cada rueda.
+## Sensores utilizados
 
-## Frecuencia de Muestreo
+| Sensor | Función |
+|---|---|
+| `ps0`, `ps7` | Sensores frontales |
+| `ps6` | Sensor diagonal/lateral izquierdo |
+| `ps1` | Sensor diagonal/lateral derecho |
+| Encoder izquierdo | Medición angular rueda izquierda |
+| Encoder derecho | Medición angular rueda derecha |
 
-El controlador se ejecuta con un paso de simulación fijo, definiendo los siguientes parámetros:
+Los sensores infrarrojos entregan valores proporcionales a la cercanía de obstáculos. Los encoders permiten estimar el movimiento lineal del robot a partir del giro de las ruedas.
+
+---
+
+# Frecuencia de Muestreo
+
+El controlador utiliza un paso de simulación fijo:
 
 | Parámetro | Valor |
-| :--- | :--- |
-| Tiempo de muestreo ($T_s$) | `0.064 s` (64 ms) |
-| Frecuencia de muestreo ($f_s = 1/T_s$) | `~15.6 Hz` |
-| Muestras registradas por experimento | Variable según duración |
+|---|---|
+| Tiempo de muestreo ($T_s$) | 0.032 s |
+| Frecuencia de muestreo ($f_s$) | 31.25 Hz |
 
 ```python
-TIME_STEP = 64  # ms
+TIME_STEP = 32
 ```
 
-Todas las señales registradas, filtradas y estimadas fueron analizadas bajo esta misma frecuencia de muestreo.
+Todas las señales registradas fueron analizadas utilizando esta frecuencia de muestreo.
 
-## Análisis de Señales Registradas
+---
 
-Durante la simulación se registraron en tiempo real las lecturas crudas de los sensores de distancia y de los encoders.
+# Análisis de Señales Registradas
 
-### Señales de sensores de distancia (crudas)
-Las lecturas de los sensores frontales presentan ruido significativo, con variaciones aleatorias incluso cuando el robot se encuentra estático o en movimiento uniforme. Esto motiva la aplicación de filtrado antes de utilizarlas para la toma de decisiones.
+Durante la simulación se registraron:
 
-### Señales de encoders
-Los encoders entregan valores angulares acumulados en radianes. Su comportamiento es más estable que los sensores de distancia, aunque también acumulan error a lo largo del tiempo.
+- señales crudas de sensores IR
+- señales filtradas
+- estimación Kalman
+- valores de encoders
 
-Los valores registrados se almacenaron en listas para su posterior análisis y graficación:
+## Señales crudas
+
+Las mediciones presentan ruido significativo y variaciones rápidas incluso bajo movimiento uniforme.
+
+## Señales filtradas
+
+La media móvil reduce considerablemente las oscilaciones de alta frecuencia.
+
+## Señal estimada mediante Kalman
+
+La estimación fusionada presenta el comportamiento más estable, reduciendo ruido y evitando decisiones erráticas.
 
 ```python
-raw_front_log = []
-filtered_front_log = []
-kalman_front_log = []
-encoder_left_log = []
-encoder_right_log = []
-
-# En cada iteración:
 raw_front_log.append(raw_front)
-encoder_left_log.append(left_encoder.getValue())
-encoder_right_log.append(right_encoder.getValue())
+filtered_front_log.append(filtered_front)
+kalman_front_log.append(d_est)
 ```
 
-## Estimación del Avance mediante Encoders
+---
 
-Los encoders del e-puck entregan medidas angulares en radianes. Para convertir esta información en desplazamiento lineal se utiliza la relación:
+# Estimación del Avance mediante Encoders
 
-$$s = r\theta$$
+Los encoders del e-puck entregan medidas angulares en radianes.
 
-Donde:
-* **$s$**: desplazamiento lineal de la rueda
-* **$r$**: radio de la rueda del e-puck (`0.0205 m`)
-* **$\theta$**: variación angular medida por el encoder entre dos instantes consecutivos
+La conversión a desplazamiento lineal se realiza mediante:
 
-El avance estimado del robot en cada paso se calcula como el promedio del desplazamiento de ambas ruedas:
+$$
+s = r\theta
+$$
 
-$$\Delta d_k = \frac{s_{\text{izq}} + s_{\text{der}}}{2} = \frac{r(\Delta\theta_{\text{izq}} + \Delta\theta_{\text{der}})}{2}$$
+donde:
+
+- $s$: desplazamiento lineal
+- $r$: radio de la rueda
+- $\theta$: desplazamiento angular
+
+Se utilizó:
 
 ```python
-WHEEL_RADIUS = 0.0205  # metros
+WHEEL_RADIUS = 0.0205
+```
 
-delta_left = (left_encoder.getValue() - prev_left_enc) * WHEEL_RADIUS
-delta_right = (right_encoder.getValue() - prev_right_enc) * WHEEL_RADIUS
+El avance promedio del robot se estima mediante:
+
+$$
+\Delta d_k = \frac{s_{izq} + s_{der}}{2}
+$$
+
+Implementación:
+
+```python
+delta_left = (
+    (cur_left_enc - prev_left_enc)
+    * WHEEL_RADIUS
+)
+
+delta_right = (
+    (cur_right_enc - prev_right_enc)
+    * WHEEL_RADIUS
+)
+
 delta_d = (delta_left + delta_right) / 2.0
-
-prev_left_enc = left_encoder.getValue()
-prev_right_enc = right_encoder.getValue()
 ```
 
-Este valor $\Delta d_k$ representa cuánto avanzó el robot entre dos instantes consecutivos y es utilizado como entrada en la etapa de predicción del filtro de Kalman.
+---
 
-## Filtro Simple Aplicado
+# Filtro Simple Aplicado
 
-Antes de implementar el filtro de Kalman, se aplicó un **filtro de media móvil** sobre las lecturas crudas de los sensores frontales. Este filtro promedia las últimas $N$ muestras para suavizar el ruido:
+Antes de aplicar Kalman se utilizó un filtro de media móvil:
 
-$$\hat{z}_k = \frac{1}{N} \sum_{i=0}^{N-1} z_{k-i}$$
+$$
+\hat{z}_k =
+\frac{1}{N}
+\sum_{i=0}^{N-1} z_{k-i}
+$$
+
+Implementación:
 
 ```python
-FILTER_WINDOW = 5  # número de muestras
+FILTER_WIN = 5
 
-sensor_buffer.append(raw_front)
-if len(sensor_buffer) > FILTER_WINDOW:
-    sensor_buffer.pop(0)
-
-filtered_front = sum(sensor_buffer) / len(sensor_buffer)
+filtered_front = moving_average(
+    front_buffer,
+    raw_front,
+    FILTER_WIN
+)
 ```
 
-### Comparación señal cruda vs. filtrada
-Al graficar ambas señales, se observa que el filtro de media móvil reduce notablemente las fluctuaciones de alta frecuencia, entregando una señal más estable sin introducir un retardo excesivo.
+Este filtro suaviza las variaciones rápidas de los sensores infrarrojos.
 
-## Filtro de Kalman
+---
 
-Se implementó un filtro de Kalman escalar para estimar la distancia frontal al obstáculo más cercano ($d_k$), combinando la predicción por encoders con la medición de los sensores frontales.
+# Filtro de Kalman
 
-### Variable de estado
-$$d_k = \text{distancia frontal estimada al obstáculo en el instante } k$$
+Se implementó un filtro de Kalman escalar para estimar la distancia frontal al obstáculo más cercano.
 
-### Etapa de Predicción
+---
 
-La distancia frontal se predice restando el avance estimado del robot:
+## Variable de estado
 
-$$\hat{d}_k^- = \hat{d}_{k-1} - \Delta d_k$$
+$$
+d_k = \text{distancia frontal estimada}
+$$
 
-La covarianza de predicción se actualiza sumando la incertidumbre del proceso:
+---
 
-$$P_k^- = P_{k-1} + Q$$
+## Predicción
+
+La distancia estimada disminuye según el avance del robot:
+
+$$
+\hat{d}_k^- =
+\hat{d}_{k-1} - \Delta d_k
+$$
+
+y:
+
+$$
+P_k^- = P_{k-1} + Q
+$$
+
+Implementación:
 
 ```python
 d_pred = d_est - delta_d
 P_pred = P_est + Q
 ```
 
-### Etapa de Corrección
+---
 
-La corrección se realiza con la medición del sensor frontal filtrado ($z_k$):
+## Corrección
 
-$$K_k = \frac{P_k^-}{P_k^- + R}$$
+La medición proviene del sensor frontal filtrado y calibrado:
 
-$$\hat{d}_k = \hat{d}_k^- + K_k(z_k - \hat{d}_k^-)$$
+```python
+z_k = ir_to_meters(filtered_front)
+```
 
-$$P_k = (1 - K_k) \cdot P_k^-$$
+Ganancia de Kalman:
+
+$$
+K_k =
+\frac{P_k^-}{P_k^- + R}
+$$
+
+Actualización:
+
+$$
+\hat{d}_k =
+\hat{d}_k^- +
+K_k(z_k - \hat{d}_k^-)
+$$
 
 ```python
 K = P_pred / (P_pred + R)
-d_est = d_pred + K * (filtered_front - d_pred)
-P_est = (1 - K) * P_pred
+
+d_est = d_pred + K * (z_k - d_pred)
+
+P_est = (1.0 - K) * P_pred
 ```
 
-### Parámetros del filtro
+---
 
-| Parámetro | Descripción | Valor usado |
-| :--- | :--- | :--- |
-| $Q$ | Varianza del proceso (incertidumbre del modelo) | `0.01` |
-| $R$ | Varianza de la medición (ruido del sensor) | `0.1` |
-| $P_0$ | Covarianza inicial | `1.0` |
-| $\hat{d}_0$ | Distancia inicial estimada | `1.0` |
+## Parámetros utilizados
 
-La ganancia $K_k$ se recalcula en cada iteración:
-- Si $R$ es grande (sensor ruidoso), $K_k$ disminuye → el filtro confía más en la predicción.
-- Si $P_k^-$ es grande (modelo incierto), $K_k$ aumenta → el filtro confía más en la medición.
+| Parámetro | Valor |
+|---|---|
+| $Q$ | 0.001 |
+| $R$ | 0.05 |
+| $P_0$ | 0.1 |
+| $\hat{d}_0$ | 0.40 m |
 
-## Lógica de Navegación Reactiva
+---
 
-La toma de decisiones del robot se basa en la distancia frontal estimada por el filtro de Kalman y en las lecturas de los sensores laterales.
+# Lógica de Navegación Reactiva
+
+La navegación utiliza:
+
+- distancia frontal estimada
+- sensores laterales
+- evasión preventiva diagonal
+
+---
+
+## Avance frontal
+
+Si:
+
+$$
+\hat{d}_k > 0.15
+$$
+
+el robot avanza.
+
+---
+
+## Obstáculo frontal
+
+Si:
+
+$$
+\hat{d}_k \leq 0.15
+$$
+
+el robot entra en modo evasión.
+
+La dirección de giro se decide usando sensores laterales:
 
 ```python
-UMBRAL_FRENTE = 0.15  # metros (umbral de seguridad)
-
-if d_est > UMBRAL_FRENTE:
-    # Avanzar
-    left_motor.setVelocity(MAX_SPEED)
-    right_motor.setVelocity(MAX_SPEED)
+if lateral_left > lateral_right:
+    direccion_giro = 1
 else:
-    # Decidir dirección de giro según sensores laterales
-    if sensor_izq.getValue() > sensor_der.getValue():
-        # Obstáculo más cercano a la izquierda → girar a la derecha
-        left_motor.setVelocity(MAX_SPEED)
-        right_motor.setVelocity(-MAX_SPEED)
-    else:
-        # Obstáculo más cercano a la derecha → girar a la izquierda
-        left_motor.setVelocity(-MAX_SPEED)
-        right_motor.setVelocity(MAX_SPEED)
+    direccion_giro = -1
 ```
 
-### Resumen de reglas de decisión
+---
 
-| Condición | Acción |
-| :--- | :--- |
-| $\hat{d}_k > \text{umbral}$ | Avanzar |
-| $\hat{d}_k \leq \text{umbral}$ y sensor izq > sensor der | Girar a la derecha |
-| $\hat{d}_k \leq \text{umbral}$ y sensor der ≥ sensor izq | Girar a la izquierda |
+## Evasión lateral inteligente
 
-## Instrucciones de Ejecución
+Se agregó un sistema de prevención de colisiones diagonales utilizando los sensores `ps6` y `ps1`.
 
-1. Descargar e instalar **Webots** desde su sitio oficial:
-   [Descargar Webots](https://www.cyberbotics.com/#download)
+Esto permite detectar paredes laterales antes de que entren al cono frontal.
 
-2. Descargar e instalar **Python** desde el sitio oficial:
-   [Descargar Python](https://www.python.org/downloads/)
-   - Se utilizó la versión **Python 3.12.4**.
+Ejemplo:
 
-3. Descargar o clonar este repositorio en su computador.
+```python
+if lateral_left > LATERAL_ALERT:
 
-4. En Webots, abrir el archivo de mundo incluido en el repositorio (`.wbt`) correspondiente al escenario deseado.
+    left_speed = MAX_SPEED * 0.9
+    right_speed = MAX_SPEED * 0.3
 
-5. Seleccionar el robot dentro del entorno de simulación.
+elif lateral_right > LATERAL_ALERT:
 
-6. En las propiedades del robot:
-   - Ubicar el campo **controller**
-   - Asignar el archivo `lab2controller_epuck.py` incluido en este repositorio.
+    left_speed = MAX_SPEED * 0.3
+    right_speed = MAX_SPEED * 0.9
+```
 
-7. Presionar el botón **Play** en Webots para iniciar la simulación.
+Este mecanismo reduce significativamente las colisiones en esquinas y pasillos estrechos.
 
-> **Nota:** Al finalizar la simulación, el controlador genera automáticamente los gráficos de las señales registradas (crudas, filtradas y estimadas con Kalman).
+---
 
-## Resultados y Experimentos
+# Instrucciones de Ejecución
 
-Se diseñaron dos escenarios de prueba en Webots:
+1. Instalar Webots.
+2. Instalar Python 3.
+3. Clonar o descargar el repositorio.
+4. Abrir el archivo `.wbt`.
+5. Seleccionar el robot e-puck.
+6. Asignar el controlador:
 
-### Escenario 1: Entorno simple
-Un espacio abierto con pocos obstáculos distribuidos. El robot debía detectarlos y esquivarlos sin colisionar.
+```text
+lab2controller_epuck.py
+```
 
-| Métrica | Con señal cruda | Con filtro simple | Con fusión Kalman |
-| :--- | :--- | :--- | :--- |
-| Estabilidad del movimiento | Baja (oscilaciones) | Media | Alta |
-| Giros innecesarios | Frecuentes | Moderados | Escasos |
-| Colisiones | Ocasionales | Pocas | Ninguna |
+7. Ejecutar la simulación.
 
-### Escenario 2: Entorno complejo
-Pasillos estrechos y múltiples obstáculos. Se evaluó la capacidad de navegación en espacios reducidos.
+---
 
-| Métrica | Con señal cruda | Con filtro simple | Con fusión Kalman |
-| :--- | :--- | :--- | :--- |
-| Estabilidad del movimiento | Muy baja | Media | Alta |
+# Resultados y Experimentos
+
+Se realizaron pruebas en dos escenarios.
+
+---
+
+## Escenario simple
+
+Pocos obstáculos y espacio abierto.
+
+| Métrica | Señal cruda | Filtro simple | Kalman |
+|---|---|---|---|
+| Estabilidad | Baja | Media | Alta |
+| Giros innecesarios | Muchos | Moderados | Pocos |
+| Colisiones | Algunas | Pocas | Ninguna |
+
+---
+
+## Escenario complejo
+
+Pasillos estrechos y obstáculos múltiples.
+
+| Métrica | Señal cruda | Filtro simple | Kalman |
+|---|---|---|---|
+| Estabilidad | Muy baja | Media | Alta |
 | Giros innecesarios | Muy frecuentes | Moderados | Pocos |
 | Colisiones | Frecuentes | Ocasionales | Ninguna |
 
-### Comparación de señales
-Al graficar las tres señales (cruda, filtrada y estimada con Kalman), se observa que:
-- La señal **cruda** presenta ruido considerable.
-- El **filtro simple** suaviza el ruido pero introduce un leve retardo.
-- La **estimación con Kalman** produce la señal más estable y con menor retardo, al combinar la predicción cinemática con la medición del sensor.
+---
 
-## Evidencia Visual
-A continuación se muestra la ejecución del controlador del robot en Webots.
+# Evidencia Visual
 
-### Demostración del robot
-![Robot en funcionamiento](Robot-Video.gif)
+## Robot en funcionamiento
 
-### Gráficos de señales
-![Señales registradas](graficos_señales.png)
+```text
+Robot-Video.gif
+```
 
-### Descripción del comportamiento observado
+## Señales registradas
 
-- Avance recto cuando la distancia frontal estimada supera el umbral de seguridad.
-- Giro reactivo al detectar obstáculos, con dirección determinada por los sensores laterales.
-- Mayor estabilidad en las decisiones al usar la estimación de Kalman frente a las lecturas crudas.
-- Reducción de giros innecesarios con la fusión sensorial en comparación a la señal sin filtrar.
+```text
+graficos_senales.png
+```
 
-## Análisis Final y Conclusiones
+---
 
-#### 1. **¿Qué diferencia se observa entre usar señales crudas, filtradas y estimadas con Kalman?**
-Las señales crudas presentan ruido que genera decisiones inestables, provocando giros innecesarios. El filtro simple reduce este problema, pero introduce un retardo proporcional al tamaño de la ventana. El filtro de Kalman logra el mejor equilibrio, combinando la información de movimiento (encoders) con la medición del sensor, produciendo estimaciones más robustas con menor retardo.
+# Análisis Final y Conclusiones
 
-#### 2. **¿Cómo funciona la predicción del filtro de Kalman en este contexto?**
-La predicción utiliza el avance estimado del robot mediante encoders ($s = r\theta$) para anticipar cuánto se redujo la distancia frontal al obstáculo. Esto permite que el filtro mantenga una estimación razonable incluso cuando las lecturas del sensor son temporalmente ruidosas o poco confiables.
+## Comparación entre señales
 
-#### 3. **¿Qué ocurre cuando la ganancia de Kalman es alta o baja?**
-Cuando el sensor es ruidoso ($R$ grande), la ganancia $K_k$ disminuye y el filtro confía más en la predicción cinemática. Cuando la incertidumbre del modelo es alta ($P_k^-$ grande), la ganancia aumenta y se otorga más peso a la medición del sensor. Este balance automático es la principal ventaja del filtro de Kalman frente a un filtro de ganancia fija.
+Las señales crudas presentan ruido considerable y provocan oscilaciones frecuentes.
 
-#### 4. **¿Qué tan efectiva fue la navegación reactiva implementada?**
-La lógica de navegación reactiva basada en la distancia estimada con Kalman demostró ser efectiva para evitar colisiones en ambos escenarios. La incorporación de los sensores laterales permitió elegir correctamente la dirección de giro, reduciendo la probabilidad de quedar atrapado frente a un obstáculo.
+La media móvil reduce parte de estas fluctuaciones, aunque introduce un pequeño retardo.
 
-### Resumen de Conclusiones
-1. **Filtrado:** El filtro de media móvil es simple y efectivo para reducir ruido, pero el filtro de Kalman supera su desempeño al incorporar un modelo de movimiento.
-2. **Fusión sensorial:** La combinación de encoders y sensores de distancia mediante Kalman entrega estimaciones más confiables que cualquiera de las fuentes por separado.
-3. **Navegación reactiva:** La toma de decisiones basada en distancia estimada reduce considerablemente los giros innecesarios y las colisiones respecto al uso de señales crudas.
-4. **Modelo cinemático:** La relación $s = r\theta$ permite una estimación adecuada del avance del robot, sirviendo como predictor del estado en el filtro de Kalman.
+El filtro de Kalman produce la estimación más estable y confiable al fusionar:
+
+- movimiento estimado por encoders
+- percepción del entorno mediante sensores IR
+
+---
+
+## Predicción mediante encoders
+
+La relación:
+
+$$
+s = r\theta
+$$
+
+permite estimar el avance del robot entre muestras consecutivas.
+
+Esto mejora significativamente la estabilidad del sistema frente al ruido de sensores.
+
+---
+
+## Uso de sensores laterales
+
+La incorporación de evasión lateral preventiva permitió detectar paredes diagonales antes de una colisión frontal.
+
+Esto mejoró especialmente:
+
+- navegación en esquinas
+- pasillos estrechos
+- estabilidad del movimiento
+
+---
+
+## Conclusiones principales
+
+1. El filtro de media móvil reduce ruido pero introduce retardo.
+2. El filtro de Kalman entrega estimaciones más robustas.
+3. La fusión sensorial mejora considerablemente la navegación.
+4. Los sensores laterales son fundamentales para evitar colisiones diagonales.
+5. La navegación reactiva basada en Kalman reduce giros innecesarios y evita colisiones.
