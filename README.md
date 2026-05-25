@@ -380,8 +380,16 @@ Pasillos estrechos y obstáculos múltiples.
 # Evidencia Visual
 
 ## Robot en funcionamiento
+### Navegación final
+Demostración del comportamiento completo del robot utilizando:
 
-![video_laboratorio_2](video_laboratotio_2.gif)
+- sensores IR
+- filtrado de media móvil
+- filtro de Kalman
+- evasión lateral inteligente
+
+![Funcionamiento final](video_laboratorio_2.gif)
+
 
 ## Señales registradas
 
