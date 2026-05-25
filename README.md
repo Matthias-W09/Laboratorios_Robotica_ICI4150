@@ -381,9 +381,7 @@ Pasillos estrechos y obstáculos múltiples.
 
 ## Robot en funcionamiento
 
-```text
-Robot-Video.gif
-```
+![Robot en funcionamiento](video_laboratotio_2.gif)
 
 ## Señales registradas
 
