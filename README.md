@@ -380,16 +380,20 @@ Pasillos estrechos y obstáculos múltiples.
 # Evidencia Visual
 
 ## Robot en funcionamiento
-### Navegación final
-Demostración del comportamiento completo del robot utilizando:
+### Escenario simple
+Prueba básica del robot en un entorno abierto con un único obstáculo.
+
+![Escenario simple](escenario_simple.gif)
+
+### Escenario complejo
+Navegación reactiva completa en pasillos estrechos y múltiples obstáculos utilizando:
 
 - sensores IR
 - filtrado de media móvil
 - filtro de Kalman
 - evasión lateral inteligente
 
-![Funcionamiento final](video_laboratorio_2.gif)
-
+![Escenario complejo](navegacion_final.gif)
 
 ## Señales registradas
 
