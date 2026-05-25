@@ -383,7 +383,8 @@ Pasillos estrechos y obstáculos múltiples.
 ### Escenario simple
 Prueba básica del robot en un entorno abierto con un único obstáculo.
 
-![Escenario simple](escenario_simple.gif)
+![Escenario simple](video_Lab2.gif)
+
 
 ### Escenario complejo
 Navegación reactiva completa en pasillos estrechos y múltiples obstáculos utilizando:
@@ -393,7 +394,8 @@ Navegación reactiva completa en pasillos estrechos y múltiples obstáculos uti
 - filtro de Kalman
 - evasión lateral inteligente
 
-![Escenario complejo](navegacion_final.gif)
+![Escenario complejo](video_laboratorio_2.gif)
+
 
 ## Señales registradas
 
