@@ -381,7 +381,7 @@ Pasillos estrechos y obstáculos múltiples.
 
 ## Robot en funcionamiento
 ### Escenario simple
-Prueba básica del robot en un entorno abierto con un único obstáculo.
+Prueba básica del robot en un entorno abierto con pocos obstáculo.
 
 ![Escenario simple](Lab2.gif)
 
