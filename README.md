@@ -89,6 +89,8 @@ Durante la simulación se registraron:
 - estimación Kalman
 - valores de encoders
 
+![Gráfico de señales crudas, filtradas y estimadas](Grafico_comparacion_2.png)
+
 ## Señales crudas
 
 Las mediciones presentan ruido significativo y variaciones rápidas incluso bajo movimiento uniforme.
@@ -400,6 +402,8 @@ Navegación reactiva completa en pasillos estrechos y múltiples obstáculos uti
 - evasión lateral inteligente
 
 ![Escenario complejo](video_laboratorio_2.gif)
+
+[Comparación señal cruda vs filtrada vs Kalman](Grafico_comparacion_1.png)
 
 
 ## Señales registradas
