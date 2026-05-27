@@ -182,12 +182,10 @@ Este filtro suaviza las variaciones rápidas de los sensores infrarrojos.
 ---
 
 # Filtro de Kalman
-
-Se implementó un filtro de Kalman escalar para estimar la distancia frontal al obstáculo más cercano.
-
+ 
+Se implementó un filtro de Kalman escalar para estimar la distancia frontal al obstáculo más cercano, combinando dos fuentes de información: la predicción basada en el movimiento del robot (encoders) y la corrección basada en la medición del entorno (sensores IR).
+ 
 ---
-
-## Variable de estado
 
 $$
 d_k = \text{distancia frontal estimada}
@@ -219,48 +217,55 @@ P_pred = P_est + Q
 
 ---
 
-## Corrección
-
-La medición proviene del sensor frontal filtrado y calibrado:
-
+## Etapa de Corrección
+ 
+**¿Qué hace esta etapa?** Una vez disponible la medición real del sensor frontal $z_k$, se corrige la predicción ponderando cuánto se confía en cada fuente. La ganancia de Kalman $K_k$ determina ese peso:
+ 
+$$
+K_k = \frac{P_k^-}{P_k^- + R}
+$$
+ 
+- Si $R$ es grande (sensor muy ruidoso), $K_k$ es pequeño → se confía más en la predicción.
+- Si $P_k^-$ es grande (predicción muy incierta), $K_k$ es grande → se confía más en la medición.
+La estimación actualizada es:
+ 
+$$
+\hat{d}_k = \hat{d}_k^- + K_k(z_k - \hat{d}_k^-)
+$$
+ 
+y la covarianza se reduce:
+ 
+$$
+P_k = (1 - K_k) \, P_k^-
+$$
+ 
+La medición se obtiene convirtiendo la lectura IR filtrada a metros mediante la función de calibración `ir_to_meters`:
+ 
 ```python
 z_k = ir_to_meters(filtered_front)
 ```
-
-Ganancia de Kalman:
-
-$$
-K_k =
-\frac{P_k^-}{P_k^- + R}
-$$
-
-Actualización:
-
-$$
-\hat{d}_k =
-\hat{d}_k^- +
-K_k(z_k - \hat{d}_k^-)
-$$
-
+ 
+Implementación de la corrección:
+ 
 ```python
 K = P_pred / (P_pred + R)
-
+ 
 d_est = d_pred + K * (z_k - d_pred)
-
+ 
 P_est = (1.0 - K) * P_pred
 ```
-
+ 
 ---
-
+ 
 ## Parámetros utilizados
-
-| Parámetro | Valor |
-|---|---|
-| $Q$ | 0.001 |
-| $R$ | 0.05 |
-| $P_0$ | 0.1 |
-| $\hat{d}_0$ | 0.40 m |
-
+ 
+| Parámetro | Valor | Justificación |
+|---|---|---|
+| $Q$ | 0.001 | Ruido de proceso bajo: la odometría es relativamente confiable a corto plazo |
+| $R$ | 0.05 | Ruido de medición moderado: los sensores IR del e-puck presentan varianza notable |
+| $P_0$ | 0.1 | Incertidumbre inicial moderada |
+| $\hat{d}_0$ | 0.40 m | Distancia inicial estimada (espacio abierto al inicio) |
+ 
 ---
 
 # Lógica de Navegación Reactiva
@@ -408,29 +413,26 @@ graficos_senales.png
 # Análisis Final y Conclusiones
 
 ## Comparación entre señales
-
-Las señales crudas presentan ruido considerable y provocan oscilaciones frecuentes.
-
-La media móvil reduce parte de estas fluctuaciones, aunque introduce un pequeño retardo.
-
-El filtro de Kalman produce la estimación más estable y confiable al fusionar:
-
-- movimiento estimado por encoders
-- percepción del entorno mediante sensores IR
-
+ 
+Las señales crudas presentan ruido considerable (oscilaciones de ±30–80 unidades IR) y provocan activaciones erróneas del modo de evasión. La media móvil reduce estas fluctuaciones, pero introduce un retardo de 2–3 muestras que puede ser problemático en entornos muy dinámicos.
+ 
+El filtro de Kalman produce la estimación más estable y confiable al fusionar dos fuentes complementarias:
+ 
+- la predicción por encoders, que es precisa a corto plazo pero acumula error con el tiempo
+- la percepción del entorno mediante sensores IR, que es ruidosa pero no acumula error sistemático
+Esta complementariedad es la razón fundamental por la que la fusión supera a cualquiera de las fuentes individualmente.
+ 
 ---
 
 ## Predicción mediante encoders
-
+ 
 La relación:
-
+ 
 $$
 s = r\theta
 $$
-
-permite estimar el avance del robot entre muestras consecutivas.
-
-Esto mejora significativamente la estabilidad del sistema frente al ruido de sensores.
+ 
+permite estimar el avance del robot entre muestras consecutivas con precisión suficiente para el paso de tiempo utilizado ($T_s = 0.032$ s). El error de odometría acumulado es compensado en cada paso por la etapa de corrección del Kalman, que reancla la estimación a la medición del sensor.
 
 ---
 
@@ -447,9 +449,10 @@ Esto mejoró especialmente:
 ---
 
 ## Conclusiones principales
-
-1. El filtro de media móvil reduce ruido pero introduce retardo.
-2. El filtro de Kalman entrega estimaciones más robustas.
-3. La fusión sensorial mejora considerablemente la navegación.
-4. Los sensores laterales son fundamentales para evitar colisiones diagonales.
-5. La navegación reactiva basada en Kalman reduce giros innecesarios y evita colisiones.
+ 
+1. El filtro de media móvil reduce ruido pero introduce retardo proporcional al tamaño de ventana.
+2. El filtro de Kalman entrega estimaciones más robustas gracias a la fusión de odometría e IR.
+3. La cantidad de muestras necesaria para observar comportamiento estable fue de al menos 300–400 muestras (~10 s).
+4. Los sensores laterales son fundamentales para evitar colisiones diagonales en pasillos.
+5. La navegación reactiva basada en Kalman reduce giros innecesarios y evita colisiones incluso en escenarios complejos.
+6. El uso de histéresis en los umbrales de activación/desactivación (0.22 m / 0.25 m) evita oscilaciones en el comportamiento del robot cerca de obstáculos.
