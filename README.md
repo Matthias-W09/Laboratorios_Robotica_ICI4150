@@ -403,7 +403,7 @@ Navegación reactiva completa en pasillos estrechos y múltiples obstáculos uti
 
 ![Escenario complejo](video_laboratorio_2.gif)
 
-[Comparación señal cruda vs filtrada vs Kalman](Grafico_comparacion_1.png)
+[Escenario complejo](Grafico_comparacion_1.png)
 
 
 ## Señales registradas
