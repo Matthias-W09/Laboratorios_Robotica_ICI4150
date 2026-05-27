@@ -403,14 +403,12 @@ Navegación reactiva completa en pasillos estrechos y múltiples obstáculos uti
 
 ![Escenario complejo](video_laboratorio_2.gif)
 
-[Escenario complejo](Grafico_comparacion_1.png)
+
 
 
 ## Señales registradas
 
-```text
-graficos_senales.png
-```
+[Señales registradas](Grafico_comparacion_1.png)
 
 ---
 
