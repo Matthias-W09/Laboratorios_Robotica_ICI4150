@@ -434,7 +434,7 @@ $$
  
 permite estimar el avance del robot entre muestras consecutivas con precisión suficiente para el paso de tiempo utilizado ($T_s = 0.032$ s). El error de odometría acumulado es compensado en cada paso por la etapa de corrección del Kalman, que reancla la estimación a la medición del sensor.
 
-![Lecturas de encoders y avance estimado](Grafico Encoder.png)
+![Predicción mediante encoders](Grafico Encoder.png)
 
 ---
 
