@@ -408,7 +408,7 @@ Navegación reactiva completa en pasillos estrechos y múltiples obstáculos uti
 
 ## Señales registradas
 
-[Señales registradas](Grafico_comparacion_1.png)
+![Señales registradas](Grafico_comparacion_1.png)
 
 ---
 
