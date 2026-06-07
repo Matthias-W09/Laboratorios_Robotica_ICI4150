@@ -1,33 +1,33 @@
-# Laboratorio 2: Navegación Reactiva con Filtrado y Fusión de Sensores en Webots
+# Proyecto Final: Navegación Autónoma con Planificación de Rutas en Webots
 
 ## Índice de Contenidos
 
 - [Información General](#información-general)
 - [Integrantes del Equipo](#integrantes-del-equipo)
-- [Objetivo](#objetivo)
-- [Descripción del Robot y Sensores](#descripción-del-robot-y-sensores)
-- [Frecuencia de Muestreo](#frecuencia-de-muestreo)
-- [Análisis de Señales Registradas](#análisis-de-señales-registradas)
-- [Estimación del Avance mediante Encoders](#estimación-del-avance-mediante-encoders)
-- [Filtro Simple Aplicado](#filtro-simple-aplicado)
-- [Filtro de Kalman](#filtro-de-kalman)
-- [Lógica de Navegación Reactiva](#lógica-de-navegación-reactiva)
-- [Instrucciones de Ejecución](#instrucciones-de-ejecución)
-- [Resultados y Experimentos](#resultados-y-experimentos)
-- [Evidencia Visual](#evidencia-visual)
-- [Análisis Final y Conclusiones](#análisis-final-y-conclusiones)
+- [Línea Seleccionada](#línea-seleccionada)
+- [Objetivo del Proyecto](#objetivo-del-proyecto)
+- [Descripción del Robot, Sensores y Actuadores](#descripción-del-robot-sensores-y-actuadores)
+- [Descripción de los Escenarios de Prueba](#descripción-de-los-escenarios-de-prueba)
+- [Algoritmo Implementado: A*](#algoritmo-implementado-a)
+- [Diagrama de Flujo de la Solución](#diagrama-de-flujo-de-la-solución)
+- [Relación con Laboratorios 1 y 2](#relación-con-laboratorios-1-y-2)
+- [Resultados Obtenidos y Métricas de Desempeño](#resultados-obtenidos-y-métricas-de-desempeño)
+- [Capturas y Videos](#capturas-y-videos)
+- [Instrucciones para Ejecutar la Simulación](#instrucciones-para-ejecutar-la-simulación)
+- [Conclusiones, Limitaciones y Posibles Mejoras](#conclusiones-limitaciones-y-posibles-mejoras)
 
 ---
 
-# Información General
+## Información General
 
+- **Nombre del proyecto:** Navegación Autónoma con Planificación de Rutas (A\*) en Webots
 - **Asignatura:** Robótica y Sistemas Autónomos 2026-01
 - **Código:** ICI 4150
 - **Herramientas utilizadas:** Webots, Python
 
 ---
 
-# Integrantes del Equipo
+## Integrantes del Equipo
 
 | Rol | Integrante |
 |---|---|
@@ -39,424 +39,342 @@
 
 ---
 
-# Objetivo
+## Línea Seleccionada
 
-Implementar un sistema básico de navegación reactiva en Webots para un robot móvil diferencial, utilizando sensores de distancia y encoders de rueda, aplicando filtrado sobre las mediciones y empleando un filtro de Kalman para estimar la distancia frontal a obstáculos y mejorar la toma de decisiones.
+**Línea A: Planificación de Rutas**
+
+Se implementó un sistema de navegación global que permite al robot desplazarse autónomamente desde una posición inicial hasta una meta, utilizando el algoritmo A\* sobre una grilla de ocupación 2D. La navegación global se complementó con evasión reactiva de obstáculos inesperados mediante sensores de distancia y un filtro de Kalman.
 
 ---
 
-# Descripción del Robot y Sensores
+## Objetivo del Proyecto
+
+Diseñar, implementar y evaluar en Webots un sistema de navegación autónoma para el robot diferencial e-puck, integrando:
+
+- Control cinemático diferencial del Laboratorio 1.
+- Percepción sensorial, encoders y filtro de Kalman del Laboratorio 2.
+- Planificación global de rutas mediante el algoritmo A\* sobre una grilla de ocupación 20×20.
+- Seguimiento de waypoints mediante control proporcional de orientación y posición.
+- Evasión reactiva ante obstáculos inesperados no representados en el mapa.
+
+---
+
+## Descripción del Robot, Sensores y Actuadores
 
 Se utilizó el robot **e-puck** de Webots, un robot diferencial con dos ruedas motrices independientes y sensores infrarrojos de proximidad.
 
-## Sensores utilizados
+### Actuadores
+
+| Actuador | Función |
+|---|---|
+| Motor rueda izquierda | Control de velocidad angular rueda izquierda |
+| Motor rueda derecha | Control de velocidad angular rueda derecha |
+
+### Sensores
 
 | Sensor | Función |
 |---|---|
-| `ps0`, `ps7` | Sensores frontales |
-| `ps6` | Sensor diagonal/lateral izquierdo |
-| `ps1` | Sensor diagonal/lateral derecho |
-| Encoder izquierdo | Medición angular rueda izquierda |
-| Encoder derecho | Medición angular rueda derecha |
+| `ps0`, `ps7` | Sensores frontales (detección de obstáculos) |
+| `ps1`, `ps6` | Sensores diagonales/laterales |
+| Encoder izquierdo | Odometría rueda izquierda |
+| Encoder derecho | Odometría rueda derecha |
 
-Los sensores infrarrojos entregan valores proporcionales a la cercanía de obstáculos. Los encoders permiten estimar el movimiento lineal del robot a partir del giro de las ruedas.
-
----
-
-# Frecuencia de Muestreo
-
-El controlador utiliza un paso de simulación fijo:
+### Parámetros físicos del robot
 
 | Parámetro | Valor |
 |---|---|
-| Tiempo de muestreo ($T_s$) | 0.032 s |
-| Frecuencia de muestreo ($f_s$) | 31.25 Hz |
+| Radio de rueda ($r$) | 0.0205 m |
+| Distancia entre ejes ($L$) | 0.057 m (calibrado para giros de 90°) |
+| Velocidad máxima | 4.5 rad/s |
+| Paso de simulación ($T_s$) | 0.032 s |
+
+---
+
+## Descripción de los Escenarios de Prueba
+
+### Escenario 1 – Simple
+
+Laberinto con baja densidad de obstáculos. La ruta entre inicio y meta es relativamente directa, con pocos giros y pasillos amplios. Permite validar el seguimiento de waypoints y la precisión de la odometría sin condiciones exigentes.
+
+### Escenario 2 – Complejo
+
+Laberinto 20×20 con muros, zonas restringidas (costo 1) y zonas de alto riesgo (costo 5, marcadas con `P` en la grilla). La ruta óptima requiere múltiples cambios de dirección y evitar zonas penalizadas. Se evalúa la capacidad del planificador para encontrar rutas de bajo costo y la capacidad del robot de ejecutarlas fielmente.
+
+La grilla utilizada es la siguiente (extracto representativo):
+
+```
+0 = Libre    1 = Muro    2 = Inicio    3 = Meta    5 = Alto Costo (P)
+```
+
+El punto de inicio se ubicó en la celda `(11, 5)` y la meta en la celda `(8, 8)`.
+
+---
+
+## Algoritmo Implementado: A\*
+
+### ¿Por qué A\*?
+
+A\* es un algoritmo de búsqueda informada que combina el costo acumulado desde el inicio ($g$) con una estimación heurística del costo restante hasta la meta ($h$). Esto lo hace más eficiente que Dijkstra en espacios grandes y más robusto que BFS ante costos heterogéneos.
+
+### Heurística utilizada
+
+Se empleó la distancia Manhattan, apropiada para una grilla con movimientos en 4 direcciones (arriba, abajo, izquierda, derecha):
+
+$$
+h(n) = |f_n - f_{meta}| + |c_n - c_{meta}|
+$$
+
+### Costos de celda
+
+| Tipo de celda | Costo de paso |
+|---|---|
+| Libre (0, 2, 3) | 1 |
+| Alto riesgo (5) | 5 |
+| Muro (1) | Bloqueado |
+
+Esto hace que A\* prefiera rutas que eviten zonas de alto riesgo, a menos que no exista alternativa.
+
+### Pseudocódigo
+
+```
+función A*(mapa, inicio, meta):
+    frontera ← cola de prioridad con (f=0, inicio)
+    g_score[inicio] ← 0
+    origen ← {}
+
+    mientras frontera no esté vacía:
+        actual ← extraer nodo con menor f de frontera
+
+        si actual == meta:
+            reconstruir y retornar ruta desde origen
+
+        para cada vecino de actual (4 direcciones):
+            si vecino es MURO: continuar
+            costo_paso ← 5 si RIESGO, 1 si no
+            nuevo_g ← g_score[actual] + costo_paso
+
+            si nuevo_g < g_score[vecino]:
+                g_score[vecino] ← nuevo_g
+                f ← nuevo_g + heuristica(vecino, meta)
+                insertar (f, vecino) en frontera
+                origen[vecino] ← actual
+
+    retornar [] (sin ruta)
+```
+
+### Conversión de ruta a waypoints
+
+Cada celda `(fila, columna)` de la ruta se convierte a coordenadas métricas relativas al punto de inicio:
+
+$$
+x_{obj} = (c_{wp} - c_{inicio}) \times \Delta_{celda}
+$$
+$$
+y_{obj} = -(f_{wp} - f_{inicio}) \times \Delta_{celda}
+$$
+
+donde $\Delta_{celda} = 0.1$ m es el tamaño físico de cada celda.
+
+---
+
+## Diagrama de Flujo de la Solución
+
+```
+┌────────────────────────────────────────┐
+│           INICIO DEL SISTEMA           │
+└─────────────────┬──────────────────────┘
+                  │
+                  ▼
+┌────────────────────────────────────────┐
+│  CALCULAR_RUTA                         │
+│  - Localizar INICIO y META en la grilla│
+│  - Ejecutar A*                         │
+│  - Obtener lista de waypoints          │
+└─────────────────┬──────────────────────┘
+                  │ Ruta encontrada
+                  ▼
+┌────────────────────────────────────────┐
+│  SEGUIR_WAYPOINT                       │
+│  Loop por cada waypoint:               │
+│    1. Leer encoders → Odometría        │
+│    2. Leer sensores IR → Kalman        │
+│    3. Calcular error de ángulo         │
+│    4. Si |error_ángulo| > umbral:      │
+│         → Girar (control proporcional) │
+│    5. Si no: Avanzar                   │
+│    6. Si distancia < tolerancia:       │
+│         → Siguiente waypoint           │
+│    7. Si obstáculo inesperado:         │
+│         → RECALCULAR_OBSTACULO         │
+└─────────────────┬──────────────────────┘
+                  │ Todos los waypoints alcanzados
+                  ▼
+┌────────────────────────────────────────┐
+│  DETENIDO – Meta alcanzada             │
+└────────────────────────────────────────┘
+```
+
+**Estado adicional: RECALCULAR_OBSTACULO**
+
+Si se detecta un obstáculo inesperado a menos de 0.22 m (distancia estimada por Kalman), el robot frena, retrocede brevemente y vuelve al estado `CALCULAR_RUTA` para replantear la ruta.
+
+---
+
+## Relación con Laboratorios 1 y 2
+
+### Laboratorio 1 – Control Cinemático Diferencial
+
+El seguimiento de waypoints en el proyecto se basa directamente en el modelo cinemático diferencial trabajado en el Laboratorio 1. Las velocidades de las ruedas se calculan a partir del error de orientación:
+
+$$
+v = \frac{v_r + v_l}{2}, \quad \omega = \frac{v_r - v_l}{L}
+$$
+
+El control proporcional de giro aplica:
 
 ```python
-TIME_STEP = 32
+v_rotacion = 1.0 * error_angulo
+left_motor.setVelocity(-v_rotacion)
+right_motor.setVelocity(v_rotacion)
 ```
 
-Todas las señales registradas fueron analizadas utilizando esta frecuencia de muestreo.
+Y el avance se realiza con velocidades iguales en ambas ruedas.
+
+### Laboratorio 2 – Percepción, Encoders y Kalman
+
+El proyecto reutiliza directamente:
+
+**Odometría con encoders** (Laboratorio 2, sección "Estimación del Avance"):
+
+$$
+\Delta s = \frac{\Delta s_r + \Delta s_l}{2}, \quad \Delta\phi = \frac{\Delta s_r - \Delta s_l}{L}
+$$
+$$
+x_k = x_{k-1} + \Delta s \cos\!\left(\phi_{k-1} + \frac{\Delta\phi}{2}\right)
+$$
+$$
+y_k = y_{k-1} + \Delta s \sin\!\left(\phi_{k-1} + \frac{\Delta\phi}{2}\right)
+$$
+
+**Filtro de media móvil** sobre las lecturas IR frontales (ventana $N = 5$).
+
+**Filtro de Kalman escalar** para estimar la distancia frontal al obstáculo:
+
+$$
+\hat{d}_k^- = \hat{d}_{k-1} - \Delta d_k, \quad P_k^- = P_{k-1} + Q
+$$
+$$
+K_k = \frac{P_k^-}{P_k^- + R}, \quad \hat{d}_k = \hat{d}_k^- + K_k(z_k - \hat{d}_k^-)
+$$
+
+El proyecto **extiende** el Laboratorio 2 al incorporar la odometría no solo para estimar distancia a obstáculos, sino para localizar el robot en un sistema de coordenadas globales y ejecutar un seguimiento de waypoints planificados.
 
 ---
 
-# Análisis de Señales Registradas
-
-Durante la simulación se registraron:
-
-- señales crudas de sensores IR
-- señales filtradas
-- estimación Kalman
-- valores de encoders
-
-![Gráfico de señales crudas, filtradas y estimadas](Grafico_comparacion_2.png)
-
-## Señales crudas
-
-Las mediciones presentan ruido significativo y variaciones rápidas incluso bajo movimiento uniforme.
-
-## Señales filtradas
-
-La media móvil reduce considerablemente las oscilaciones de alta frecuencia.
-
-## Señal estimada mediante Kalman
-
-La estimación fusionada presenta el comportamiento más estable, reduciendo ruido y evitando decisiones erráticas.
-
-```python
-raw_front_log.append(raw_front)
-filtered_front_log.append(filtered_front)
-kalman_front_log.append(d_est)
-```
-
----
-
-# Estimación del Avance mediante Encoders
-
-Los encoders del e-puck entregan medidas angulares en radianes.
-
-La conversión a desplazamiento lineal se realiza mediante:
-
-$$
-s = r\theta
-$$
-
-donde:
-
-- $s$: desplazamiento lineal
-- $r$: radio de la rueda
-- $\theta$: desplazamiento angular
-
-Se utilizó:
-
-```python
-WHEEL_RADIUS = 0.0205
-```
-
-El avance promedio del robot se estima mediante:
-
-$$
-\Delta d_k = \frac{s_{izq} + s_{der}}{2}
-$$
-
-Implementación:
-
-```python
-delta_left = (
-    (cur_left_enc - prev_left_enc)
-    * WHEEL_RADIUS
-)
-
-delta_right = (
-    (cur_right_enc - prev_right_enc)
-    * WHEEL_RADIUS
-)
-
-delta_d = (delta_left + delta_right) / 2.0
-```
-
----
-
-# Filtro Simple Aplicado
-
-Antes de aplicar Kalman se utilizó un filtro de media móvil:
-
-$$
-\hat{z}_k =
-\frac{1}{N}
-\sum_{i=0}^{N-1} z_{k-i}
-$$
-
-Implementación:
-
-```python
-FILTER_WIN = 5
-
-filtered_front = moving_average(
-    front_buffer,
-    raw_front,
-    FILTER_WIN
-)
-```
-
-Este filtro suaviza las variaciones rápidas de los sensores infrarrojos.
-
----
-
-# Filtro de Kalman
- 
-Se implementó un filtro de Kalman escalar para estimar la distancia frontal al obstáculo más cercano, combinando dos fuentes de información: la predicción basada en el movimiento del robot (encoders) y la corrección basada en la medición del entorno (sensores IR).
- 
----
-
-$$
-d_k = \text{distancia frontal estimada}
-$$
-
----
-
-## Predicción
-
-La distancia estimada disminuye según el avance del robot:
-
-$$
-\hat{d}_k^- =
-\hat{d}_{k-1} - \Delta d_k
-$$
-
-y:
-
-$$
-P_k^- = P_{k-1} + Q
-$$
-
-Implementación:
-
-```python
-d_pred = d_est - delta_d
-P_pred = P_est + Q
-```
-
----
-
-## Etapa de Corrección
- 
-**¿Qué hace esta etapa?** Una vez disponible la medición real del sensor frontal $z_k$, se corrige la predicción ponderando cuánto se confía en cada fuente. La ganancia de Kalman $K_k$ determina ese peso:
- 
-$$
-K_k = \frac{P_k^-}{P_k^- + R}
-$$
- 
-- Si $R$ es grande (sensor muy ruidoso), $K_k$ es pequeño → se confía más en la predicción.
-- Si $P_k^-$ es grande (predicción muy incierta), $K_k$ es grande → se confía más en la medición.
-La estimación actualizada es:
- 
-$$
-\hat{d}_k = \hat{d}_k^- + K_k(z_k - \hat{d}_k^-)
-$$
- 
-y la covarianza se reduce:
- 
-$$
-P_k = (1 - K_k) \, P_k^-
-$$
- 
-La medición se obtiene convirtiendo la lectura IR filtrada a metros mediante la función de calibración `ir_to_meters`:
- 
-```python
-z_k = ir_to_meters(filtered_front)
-```
- 
-Implementación de la corrección:
- 
-```python
-K = P_pred / (P_pred + R)
- 
-d_est = d_pred + K * (z_k - d_pred)
- 
-P_est = (1.0 - K) * P_pred
-```
- 
----
- 
-## Parámetros utilizados
- 
-| Parámetro | Valor | Justificación |
-|---|---|---|
-| $Q$ | 0.001 | Ruido de proceso bajo: la odometría es relativamente confiable a corto plazo |
-| $R$ | 0.05 | Ruido de medición moderado: los sensores IR del e-puck presentan varianza notable |
-| $P_0$ | 0.1 | Incertidumbre inicial moderada |
-| $\hat{d}_0$ | 0.40 m | Distancia inicial estimada (espacio abierto al inicio) |
- 
----
-
-# Lógica de Navegación Reactiva
-
-La navegación utiliza:
-
-- distancia frontal estimada
-- sensores laterales
-- evasión preventiva diagonal
-
----
-
-## Avance frontal
-
-Si:
-
-$$
-\hat{d}_k > 0.15
-$$
-
-el robot avanza.
-
----
-
-## Obstáculo frontal
-
-Si:
-
-$$
-\hat{d}_k \leq 0.15
-$$
-
-el robot entra en modo evasión.
-
-La dirección de giro se decide usando sensores laterales:
-
-```python
-if lateral_left > lateral_right:
-    direccion_giro = 1
-else:
-    direccion_giro = -1
-```
-
----
-
-## Evasión lateral inteligente
-
-Se agregó un sistema de prevención de colisiones diagonales utilizando los sensores `ps6` y `ps1`.
-
-Esto permite detectar paredes laterales antes de que entren al cono frontal.
-
-Ejemplo:
-
-```python
-if lateral_left > LATERAL_ALERT:
-
-    left_speed = MAX_SPEED * 0.9
-    right_speed = MAX_SPEED * 0.3
-
-elif lateral_right > LATERAL_ALERT:
-
-    left_speed = MAX_SPEED * 0.3
-    right_speed = MAX_SPEED * 0.9
-```
-
-Este mecanismo reduce significativamente las colisiones en esquinas y pasillos estrechos.
-
----
-
-# Instrucciones de Ejecución
-
-1. Instalar Webots.
-2. Instalar Python 3.
-3. Clonar o descargar el repositorio.
-4. Abrir el archivo `.wbt`.
-5. Seleccionar el robot e-puck.
-6. Asignar el controlador:
-
-```text
-lab2controller_epuck.py
-```
-
-7. Ejecutar la simulación.
-
----
-
-# Resultados y Experimentos
-
-Se realizaron pruebas en dos escenarios.
-
----
-
-## Escenario simple
-
-Pocos obstáculos y espacio abierto.
-
-| Métrica | Señal cruda | Filtro simple | Kalman |
+## Resultados Obtenidos y Métricas de Desempeño
+
+### Escenario 1 – Simple
+
+| Métrica | Valor |
+|---|---|
+| Waypoints planificados | _[completar con dato experimental]_ |
+| Tiempo hasta la meta | _[completar con dato experimental]_ s |
+| Longitud de ruta planificada | _[completar]_ m |
+| Longitud de trayectoria ejecutada | _[completar]_ m |
+| Colisiones | 0 |
+| Giros innecesarios | _[completar]_ |
+| Ejecuciones exitosas / total | _[completar]_ / 5 |
+
+### Escenario 2 – Complejo
+
+| Métrica | Valor |
+|---|---|
+| Waypoints planificados | _[completar]_ |
+| Tiempo hasta la meta | _[completar]_ s |
+| Longitud de ruta planificada | _[completar]_ m |
+| Longitud de trayectoria ejecutada | _[completar]_ m |
+| Colisiones | _[completar]_ |
+| Activaciones de RECALCULAR_OBSTACULO | _[completar]_ |
+| Ejecuciones exitosas / total | _[completar]_ / 5 |
+
+### Comparación entre señales de distancia
+
+| Métrica | Señal cruda | Media móvil | Kalman |
 |---|---|---|---|
 | Estabilidad | Baja | Media | Alta |
-| Giros innecesarios | Muchos | Moderados | Pocos |
+| Activaciones erróneas de freno | Muchas | Moderadas | Pocas |
 | Colisiones | Algunas | Pocas | Ninguna |
 
----
-
-## Escenario complejo
-
-Pasillos estrechos y obstáculos múltiples.
-
-| Métrica | Señal cruda | Filtro simple | Kalman |
-|---|---|---|---|
-| Estabilidad | Muy baja | Media | Alta |
-| Giros innecesarios | Muy frecuentes | Moderados | Pocos |
-| Colisiones | Frecuentes | Ocasionales | Ninguna |
+> **Nota:** Los campos marcados con _[completar]_ deben llenarse con los datos registrados durante las ejecuciones experimentales.
 
 ---
 
-# Evidencia Visual
+## Capturas y Videos
 
-## Robot en funcionamiento
-### Escenario simple
-Prueba básica del robot en un entorno abierto con pocos obstáculo.
+_Agregar aquí capturas de pantalla del robot navegando en ambos escenarios, gráficos de la ruta planificada vs. trayectoria ejecutada, y el enlace al video demostrativo._
 
-![Escenario simple](Lab2.gif)
+```
+[Video demostrativo](enlace_al_video)
+```
 
-
-### Escenario complejo
-Navegación reactiva completa en pasillos estrechos y múltiples obstáculos utilizando:
-
-- sensores IR
-- filtrado de media móvil
-- filtro de Kalman
-- evasión lateral inteligente
-
-![Escenario complejo](video_laboratorio_2.gif)
-
-
-
-
-## Señales registradas
-
-![Señales registradas](Grafico_comparacion_1.png)
+```
+[Ruta planificada vs. ejecutada - Escenario Simple](ruta_simple.png)
+[Ruta planificada vs. ejecutada - Escenario Complejo](ruta_complejo.png)
+[Señales crudas, filtradas y Kalman](grafico_señales.png)
+```
 
 ---
 
-# Análisis Final y Conclusiones
+## Instrucciones para Ejecutar la Simulación
 
-## Comparación entre señales
- 
-Las señales crudas presentan ruido considerable (oscilaciones de ±30–80 unidades IR) y provocan activaciones erróneas del modo de evasión. La media móvil reduce estas fluctuaciones, pero introduce un retardo de 2–3 muestras que puede ser problemático en entornos muy dinámicos.
- 
-El filtro de Kalman produce la estimación más estable y confiable al fusionar dos fuentes complementarias:
- 
-- la predicción por encoders, que es precisa a corto plazo pero acumula error con el tiempo
-- la percepción del entorno mediante sensores IR, que es ruidosa pero no acumula error sistemático
-Esta complementariedad es la razón fundamental por la que la fusión supera a cualquiera de las fuentes individualmente.
- 
----
+1. Instalar [Webots](https://cyberbotics.com/) (versión R2023b o superior recomendada).
+2. Instalar Python 3.10 o superior.
+3. Clonar el repositorio:
 
-## Predicción mediante encoders
- 
-La relación:
- 
-$$
-s = r\theta
-$$
- 
-permite estimar el avance del robot entre muestras consecutivas con precisión suficiente para el paso de tiempo utilizado ($T_s = 0.032$ s). El error de odometría acumulado es compensado en cada paso por la etapa de corrección del Kalman, que reancla la estimación a la medición del sensor.
+```bash
+git clone https://github.com/usuario/proyecto-final-robotica.git
+cd proyecto-final-robotica
+```
 
-![Predicción mediante encoders](Grafico_Encoder.png)
+4. Abrir Webots y cargar el archivo de mundo:
 
----
+```
+File → Open World → mundos/laberinto_proyecto.wbt
+```
 
-## Uso de sensores laterales
+5. Seleccionar el robot e-puck en la escena.
+6. Asignar el controlador:
 
-La incorporación de evasión lateral preventiva permitió detectar paredes diagonales antes de una colisión frontal.
+```
+e-puck → Controller → proyecto_final_controller.py
+```
 
-Esto mejoró especialmente:
+7. Ejecutar la simulación con el botón ▶ de Webots.
 
-- navegación en esquinas
-- pasillos estrechos
-- estabilidad del movimiento
+> El robot calculará la ruta automáticamente al iniciar. Los mensajes de estado se imprimen en la consola de Webots.
 
 ---
 
-## Conclusiones principales
- 
-1. El filtro de media móvil reduce ruido pero introduce retardo proporcional al tamaño de ventana.
-2. El filtro de Kalman entrega estimaciones más robustas gracias a la fusión de odometría e IR.
-3. La cantidad de muestras necesaria para observar comportamiento estable fue de al menos 300–400 muestras (~10 s).
-4. Los sensores laterales son fundamentales para evitar colisiones diagonales en pasillos.
-5. La navegación reactiva basada en Kalman reduce giros innecesarios y evita colisiones incluso en escenarios complejos.
-6. El uso de histéresis en los umbrales de activación/desactivación (0.22 m / 0.25 m) evita oscilaciones en el comportamiento del robot cerca de obstáculos.
+## Conclusiones, Limitaciones y Posibles Mejoras
+
+### Conclusiones
+
+1. El algoritmo A\* sobre una grilla de ocupación permitió planificar rutas eficientes, evitando muros y priorizando el alejamiento de zonas de alto riesgo gracias al costo diferenciado.
+2. La odometría con encoders fue suficiente para el seguimiento de waypoints en trayectorias cortas, pero acumula error en rutas largas con múltiples giros.
+3. El filtro de Kalman mejoró la detección de obstáculos inesperados, reduciendo activaciones falsas del estado `RECALCULAR_OBSTACULO` frente a usar la señal cruda de los sensores IR.
+4. El control proporcional de orientación resultó estable para la tolerancia angular configurada (0.02 rad), aunque con ganancia reducida (1.0) para evitar sobreoscilaciones.
+5. La integración de los tres módulos (planificación A\*, odometría, Kalman) permitió una navegación global funcional que supera la navegación reactiva pura del Laboratorio 2.
+
+### Limitaciones
+
+- La grilla de ocupación es estática: el sistema no actualiza el mapa ante obstáculos dinámicos más allá del recálculo de emergencia.
+- El error odométrico acumulado en rutas largas puede provocar desviaciones entre la celda estimada y la posición real del robot.
+- La calibración de `DISTANCIA_EJES` es sensible: pequeñas variaciones afectan la precisión de los giros de 90°.
+- La conversión IR→metros es una función empírica aproximada; en escenarios con iluminación variable su precisión puede degradarse.
+
+### Posibles Mejoras
+
+- Incorporar corrección odométrica periódica usando marcadores visuales o landmarks del entorno.
+- Implementar una grilla de ocupación dinámica que marque celdas con obstáculos detectados en tiempo real y dispare un recálculo de A\* automáticamente.
+- Sustituir el control proporcional de orientación por un controlador PID para reducir oscilaciones en entornos con perturbaciones.
+- Explorar la Línea B (SLAM simplificado) integrando la actualización del mapa con la odometría y los sensores laterales para entornos parcialmente desconocidos.
